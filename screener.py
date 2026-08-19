@@ -4,7 +4,7 @@ import yfinance as yf
 
 
 def get_supertrend(df, period=10, multiplier=3):
-    """Calculates Supertrend Indicator reliably."""
+    """Calculates Supertrend Indicator."""
     if len(df) < period:
         return df
 
@@ -52,7 +52,7 @@ def get_supertrend(df, period=10, multiplier=3):
 
 
 def analyze_stock(ticker):
-    """Analyzes Price Action & Supertrend with safe error boundaries."""
+    """Fetches Price Action and Multi-Timeframe Supertrend cleanly."""
     try:
         t = yf.Ticker(ticker)
 
@@ -73,20 +73,20 @@ def analyze_stock(ticker):
             get_supertrend(df_monthly) if not df_monthly.empty else df_daily
         )
 
-        st_daily_buy = df_daily["ST_Trend"].iloc[-1]
-        st_weekly_buy = df_weekly["ST_Trend"].iloc[-1]
-        st_monthly_buy = df_monthly["ST_Trend"].iloc[-1]
+        st_daily_buy = bool(df_daily["ST_Trend"].iloc[-1])
+        st_weekly_buy = bool(df_weekly["ST_Trend"].iloc[-1])
+        st_monthly_buy = bool(df_monthly["ST_Trend"].iloc[-1])
 
-        close_price = df_daily["Close"].iloc[-1]
-        st_daily_val = df_daily["Supertrend"].iloc[-1]
+        close_price = float(df_daily["Close"].iloc[-1])
+        st_daily_val = float(df_daily["Supertrend"].iloc[-1])
 
         # Status Logic
         if st_daily_buy and st_weekly_buy and st_monthly_buy:
-            status = "STRONG BUY ✅"
+            status = "BUY MODE (All Frames) ✅"
         elif not st_daily_buy:
-            status = "EXIT SIGNAL 🚨"
+            status = "EXIT SIGNAL 🚨 (Daily ST Turned Sell)"
         else:
-            status = "NEUTRAL ⏳"
+            status = "NEUTRAL / MIXED ⏳"
 
         return {
             "Ticker": ticker.replace(".NS", ""),
